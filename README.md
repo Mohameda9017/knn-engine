@@ -1,5 +1,8 @@
 # k-NN From Scratch (Engineering-Focused)
 
+When going through the KNN algorithm, I knew that the naive-based approach did not scale well with larger datasets. 
+So I wanted to explore how changing how we search for the nearest neighbors using different algorithms, such as brute force, KD-tree, and Ball tree, affects accuracy of its predicitions as well as performance. 
+
 This project implements the **k-Nearest Neighbors (k-NN)** algorithm from scratch with a strong focus on
 **software engineering, algorithmic clarity, and performance tradeoffs**.
 
