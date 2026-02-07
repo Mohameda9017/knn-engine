@@ -1,20 +1,14 @@
 import numpy as np
-from knn.backends._distances import _all_l2_dist2
 
-
-def kneighbors_brute(X_train, x_query, k, metric="l2"):
+def kneighbors_brute_oracle(X_train, x_query, k, metric="l2"):
     """
-    Return the k nearest neighbors of a SINGLE query point using an optimized brute-force search.
+    This is the reference implementation used for testing/validation of optimized backends
+    Return the k nearest neighbors of a SINGLE query point using brute-force search.
 
-    This function computes the distance from `x_query` to every training point in `X_train`
-    (vectorized), selects the k nearest candidates using partial selection, and then sorts
-    the selected neighbors from closest to farthest.
-
-    Tie handling:
-    - Returned neighbors are ordered deterministically by (distance, index) *within the returned set*.
-    - Because partial selection is used, if multiple points share the same distance at the k-th
-      boundary, the exact set of returned neighbors may differ from what a full sort over all
-      points would return.
+    This function computes the distance from `x_query` to every training point in `X_train`,
+    then returns the indices of the k smallest distances (nearest neighbors). The returned
+    neighbors are ordered from closest to farthest. If two training points have the same
+    distance to `x_query`, ties are broken by choosing the smaller training index first.
 
     Parameters
     ----------
@@ -31,9 +25,10 @@ def kneighbors_brute(X_train, x_query, k, metric="l2"):
     Returns
     -------
     indices : np.ndarray of shape (k,)
-        Indices into X_train of the returned neighbors, ordered from closest to farthest.
+        Indices into X_train of the k nearest neighbors to x_query, sorted from
+        closest to farthest.
     distances : np.ndarray of shape (k,)
-        Distances corresponding to `indices`, aligned and ordered in the same way.
+        Distances corresponding to `indices`, aligned and sorted in the same order.
 
     Raises
     ------
@@ -72,16 +67,13 @@ def kneighbors_brute(X_train, x_query, k, metric="l2"):
         raise ValueError("k needs to be 0<k<=n")
      
     # computing the distance between the training points and the query point and storing (distance, indx)
-    dist2=_all_l2_dist2(X_train, x_query)
-    partition = np.argpartition(dist2, k-1) # this will give us the indices of the k smallest distances but not necessarily sorted
-    k_smallest_indices = partition[:k]
     indices_distances = []
-    for indx in k_smallest_indices:
-        dist = dist2[indx]
-        indices_distances.append((dist, indx))
+    for j,row in enumerate(X_train):
+        distance = np.sum(((row - x_query) **2 )) # will take sqrt of only the k nearest neighbors later
+        indices_distances.append((distance, j)) 
 
     # sorting to get closest -> fartherest based on distance 
-    indices_distances.sort() # Since we use argpartition, this becomes O(k log k), very fast when k is small 
+    indices_distances.sort()
 
     indices = []
     distances = []

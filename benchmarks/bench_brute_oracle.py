@@ -1,7 +1,7 @@
 import time
 import numpy as np
 
-from knn.backends.brute import kneighbors_brute
+from knn.backends.brute_oracle import kneighbors_brute_oracle
 
 # Benchmarking allows us to see how the runtime of your program grows as the input size increases. 
 # Only measure what you care about, for us its the kneighbors_brute function. 
@@ -23,15 +23,15 @@ for n in ns:
     x_query = rng.standard_normal((d,))
 
     # Warmup to prevent any startup noise 
-    kneighbors_brute(X_train, x_query, k=k, metric=metric)
-    kneighbors_brute(X_train, x_query, k=k, metric=metric)
-    kneighbors_brute(X_train, x_query, k=k, metric=metric)
+    kneighbors_brute_oracle(X_train, x_query, k=k, metric=metric)
+    kneighbors_brute_oracle(X_train, x_query, k=k, metric=metric)
+    kneighbors_brute_oracle(X_train, x_query, k=k, metric=metric)
 
 
     times = []
     for _ in range(10):
         t0 = time.perf_counter()
-        kneighbors_brute(X_train, x_query, k, metric)
+        kneighbors_brute_oracle(X_train, x_query, k, metric)
         t1 = time.perf_counter()
         elapsed_s = (t1 - t0)
         times.append(elapsed_s)

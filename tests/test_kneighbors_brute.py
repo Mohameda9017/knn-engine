@@ -28,6 +28,19 @@ def test_tie_breaker_prefers_lower_index():
     assert indices.tolist() == [0,1]
     assert np.allclose(distances, np.array([np.sqrt(10), np.sqrt(10)]))
 
+def test_boundary_tie_returns_valid_neighbors_under_partial_selection():
+    # Now 3 points have the same distance and k is going to be 2, so when using partiail selection, the returned indicies might change
+    X_train = np.array([[0,1], [0,1],[7,3],[5,9], [0,1]])
+    x_query = np.array([3,2])
+    k = 2
+    metric = 'l2'
+    indices, distances = kneighbors_brute(X_train, x_query, k, metric)
+
+    tied = [0,1,4]
+    # Indices must come from the tied group (any 2 are valid under partial selection)
+    assert set(indices.tolist()).issubset(tied)
+    assert np.allclose(distances, np.array([np.sqrt(10), np.sqrt(10)]))
+
 def test_k_equals_1_returns_single_best_neighbor():
     X_train = np.array([[2, 2], [3, 3], [100, 100]], dtype=float)
     x_query = np.array([2, 2], dtype=float)
@@ -66,7 +79,7 @@ def test_rejects_wrong_shape_x_query():
 
 def test_rejects_k_out_of_range():
     X_train = np.array([[0, 0], [2, 0], [1, 0]], dtype=float)
-    x_query = np.array([[2,3,2]], dtype=float) 
+    x_query = np.array([2,3], dtype=float) 
 
     with pytest.raises(ValueError):
         kneighbors_brute(X_train, x_query, k=4, metric="l2")

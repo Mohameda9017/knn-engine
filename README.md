@@ -32,8 +32,8 @@ This project is designed as a **software + machine learning** project.
 ✅ Project structure created  
 ✅ Brute-force neighbor search implemented for a **single query point**  
 ✅ Input validation and deterministic tie-breaking implemented  
-⏳ Vectorized distance computation (next)  
-⏳ k-selection optimization (avoid full sort)  
+✅ Vectorized distance computation (next)  
+✅ k-selection optimization (avoid full sort)  
 ⏳ Tree-based backends (KD-tree, Ball tree)  
 ⏳ Benchmarks and comparisons  
 
@@ -47,8 +47,9 @@ Brute-force computation of nearest neighbors for **one query point**.
 
 **Behavior**
 - Computes the distance from the query point to all training points
-- Sorts by distance (ties broken by lower index)
-- Returns the `k` closest neighbors
+- Selects the k smallest distances using partial selection
+- Orders the returned neighbors from closest to farthest
+- Note on ties: Because partial selection is used, when multiple points share the same distance at the k-th boundary, the exact set of returned neighbors may differ from what a full sort over all points would return. The ordering within the returned set is still deterministic.
 
 **Inputs**
 - `X_train`: array of shape `(n, d)`
@@ -72,12 +73,11 @@ This implementation serves as the **correctness baseline** for all future optimi
 - **Euclidean distance only (v1)**  
   Keeps comparisons fair across backends.
 
-- **Deterministic tie-breaking**  
-  If two points are equidistant, the smaller training index is preferred.
+- **Deterministic ordering (within the returned set)**
+  After selecting k candidates, neighbors are sorted by distance and then by index to break ties consistently.
 
-- **Correctness before optimization**  
-  The brute-force method is implemented clearly before vectorization or k-selection.
-
+- **Performance-first implementation**  
+  Uses vectorized distance computation and partial sorting to avoid an O(n log n) full sort when only k neighbors are needed.
 ---
 
 ## Planned Improvements
