@@ -70,11 +70,10 @@ def test_rejects_non_2d_X_train():
         kneighbors_brute(X_train, x_query, k=3, metric="l2")
 
 def test_rejects_wrong_shape_x_query():
-    X_train = np.array([[0, 0], [2, 0], [1, 0]], dtype=float)
-    x_query = np.array([[2,3,2]], dtype=float) # x_query being shape 2D must be rejected 
-
+    X_train = np.array([[0,0],[1,1]], dtype=float)      # d=2
+    X_query = np.array([[1,2,3]], dtype=float)          # d=3 -> reject
     with pytest.raises(ValueError):
-        kneighbors_brute(X_train, x_query, k=3, metric="l2")
+        kneighbors_brute(X_train, X_query, k=1, metric="l2")
 
 
 def test_rejects_k_out_of_range():
@@ -94,3 +93,17 @@ def test_rejects_unsupported_distance_metric():
 
     with pytest.raises(ValueError):
         kneighbors_brute(X_train, x_query, k=1, metric="l1")
+
+
+def test_brute_batch_equals_single_per_row():
+    rng = np.random.default_rng(0)
+    X_train = rng.standard_normal((60,5))
+    x_query = rng.standard_normal((8,5))
+    k = 6 
+    indicies, distances = kneighbors_brute(X_train, x_query, k, 'l2')
+    for i in range(x_query.shape[0]):
+        indx, dist = kneighbors_brute(X_train, x_query[i], k, "l2")
+        assert indicies[i].tolist() == indx.tolist()
+        assert np.allclose(distances[i], dist)
+
+
